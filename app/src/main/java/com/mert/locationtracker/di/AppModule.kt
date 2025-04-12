@@ -1,7 +1,6 @@
 package com.mert.locationtracker.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
 import com.mert.locationtracker.data.local.database.LocationDatabase
 import com.mert.locationtracker.data.remote.api.GeocodingService
@@ -16,12 +15,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    @Singleton
-    fun provideContext(application: Application): Context {
-        return application.applicationContext
-    }
 
     @Provides
     @Singleton

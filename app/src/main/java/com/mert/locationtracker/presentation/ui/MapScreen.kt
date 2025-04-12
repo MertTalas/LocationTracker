@@ -64,7 +64,7 @@ fun MapScreen(
                 val isSelected = state.selectedLocation?.id == location.id
 
                 Marker(
-                    state = markerState,
+                    state = rememberMarkerState(position = position),
                     title = location.address ?: "Konum",
                     snippet = formatDate(location.timestamp),
                     onClick = {
