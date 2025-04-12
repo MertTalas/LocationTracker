@@ -40,6 +40,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun LocationTrackerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    transparentStatusBar: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -48,9 +49,26 @@ fun LocationTrackerTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+
+            if (transparentStatusBar) {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+
+                window.statusBarColor = android.graphics.Color.TRANSPARENT
+
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            } else {
+                WindowCompat.setDecorFitsSystemWindows(window, true)
+                window.statusBarColor = colorScheme.primary.toArgb()
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
         }
+
     }
 
     MaterialTheme(

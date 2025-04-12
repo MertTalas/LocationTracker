@@ -1,5 +1,6 @@
 package com.mert.locationtracker.data.service
 
+import android.Manifest
 import android.app.*
 import android.content.Context
 import android.content.Intent
@@ -19,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -33,7 +35,6 @@ class LocationService : Service() {
     private lateinit var locationCallback: LocationCallback
 
     private var lastLocation: Location? = null
-    private val MIN_DISTANCE_CHANGE_FOR_UPDATES = 100f
 
     override fun onCreate() {
         super.onCreate()
@@ -56,13 +57,13 @@ class LocationService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> start()
-            ACTION_STOP -> stop()
+            ACTION_START -> startLocationUpdates()
+            ACTION_STOP -> stopLocationUpdates()
         }
         return START_STICKY
     }
 
-    private fun start() {
+    private fun startLocationUpdates() {
         val notification = createNotification()
         createNotificationChannel()
 
@@ -73,14 +74,7 @@ class LocationService : Service() {
             .build()
 
         try {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+            if (hasNotLocationPermission()) {
                 stopSelf()
                 return
             }
@@ -97,7 +91,7 @@ class LocationService : Service() {
         }
     }
 
-    private fun stop() {
+    private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
         stopForeground(true)
         stopSelf()
@@ -114,7 +108,7 @@ class LocationService : Service() {
                 latitude = location.latitude,
                 longitude = location.longitude,
                 address = address,
-                timestamp = java.util.Date()
+                timestamp = Date()
             )
 
             locationRepository.addLocation(locationModel)
@@ -130,6 +124,15 @@ class LocationService : Service() {
         )
         return abs(results[0])
     }
+
+    private fun hasNotLocationPermission() = ActivityCompat.checkSelfPermission(
+        this,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+        this,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ) != PackageManager.PERMISSION_GRANTED
+
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -165,6 +168,7 @@ class LocationService : Service() {
     companion object {
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
+        private const val MIN_DISTANCE_CHANGE_FOR_UPDATES = 100f
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "location_channel"
     }
