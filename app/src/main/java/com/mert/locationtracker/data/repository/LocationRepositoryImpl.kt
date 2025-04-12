@@ -36,12 +36,7 @@ class LocationRepositoryImpl @Inject constructor(
                 "true",
                 "tr"
             )
-
-            if (response.results.isNotEmpty()) {
-                response.results[0].formattedAddress
-            } else {
-                null
-            }
+            response.results.firstOrNull()?.formattedAddress
         } catch (e: Exception) {
             e.printStackTrace()
             null
