@@ -3,10 +3,13 @@ package com.mert.locationtracker.presentation.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
@@ -16,10 +19,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import com.mert.locationtracker.R
 import com.mert.locationtracker.presentation.viewmodel.LocationViewModel
 import com.mert.locationtracker.ui.theme.DarkGray
 import com.mert.locationtracker.ui.theme.TrackingGreen
 import com.mert.locationtracker.ui.theme.White
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,9 +33,10 @@ fun MapScreen(
     viewModel: LocationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     val mapProperties = remember { MapProperties(isMyLocationEnabled = true) }
-    val mapUiSettings = remember { MapUiSettings(zoomControlsEnabled = false) }
+    val mapUiSettings = remember { MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -64,8 +70,8 @@ fun MapScreen(
                 val isSelected = state.selectedLocation?.id == location.id
 
                 Marker(
-                    state = markerState,
-                    title = location.address ?: "Konum",
+                    state = rememberMarkerState(position = position),
+                    title = location.address ?: stringResource(R.string.marker_title),
                     snippet = formatDate(location.timestamp),
                     onClick = {
                         viewModel.selectLocation(location)
@@ -93,6 +99,22 @@ fun MapScreen(
             }
         }
 
+        state.currentUserLocation?.let { location ->
+            MyLocationButton(
+                onClick = {
+                    coroutineScope.launch {
+                        cameraPositionState.animate(
+                            update = CameraUpdateFactory.newLatLngZoom(location, 15f),
+                            durationMs = 1000
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 32.dp, end = 16.dp)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -102,7 +124,8 @@ fun MapScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             TrackingButton(
-                text = if (state.isTracking) "Konumu Takip Etmeyi Durdur" else "Konumu Takip Et",
+                text = if (state.isTracking) stringResource(R.string.tracking_btn_stop)
+                else stringResource(R.string.tracking_btn_follow),
                 onClick = {
                     if (state.isTracking) {
                         viewModel.stopLocationTracking()
@@ -119,7 +142,7 @@ fun MapScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = state.hasLocations
             ) {
-                Text("Rotayı Sıfırla")
+                Text(stringResource(R.string.reset_route_btn))
             }
         }
 
@@ -155,6 +178,26 @@ fun CustomInfoWindow(address: String) {
                 overflow = Ellipsis
             )
         }
+    }
+}
+
+@Composable
+fun MyLocationButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier
+            .size(32.dp),
+        shape = RoundedCornerShape(8.dp),
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    ) {
+        Icon(
+            imageVector = Icons.Default.LocationOn,
+            contentDescription = stringResource(R.string.point_my_location_icon_cd)
+        )
     }
 }
 

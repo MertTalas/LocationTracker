@@ -3,10 +3,11 @@ package com.mert.locationtracker.domain.usecase
 import android.content.Context
 import android.content.Intent
 import com.mert.locationtracker.data.service.LocationService
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class StopLocationTrackingUseCase @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     operator fun invoke() {
         val intent = Intent(context, LocationService::class.java).apply {

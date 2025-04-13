@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">LocationTracker</string>
+    <string name="splash_icon_content_desc">Konum İzni</string>
+    <string name="splash_title">Konum İzni Gerekli</string>
+    <string name="splash_description">Uygulamanın çalışması için konum izinlerine ihtiyacımız var.</string>
+    <string name="permission_icon_content_desc">Konum Takipçisi Logo</string>
+    <string name="permission_btn_text">İzin Ver</string>
+    <string name="marker_title">Konum</string>
+    <string name="tracking_btn_stop">Konumu Takip Etmeyi Durdur</string>
+    <string name="tracking_btn_follow">Konumu Takip Et</string>
+    <string name="reset_route_btn">Rotayı Sıfırla</string>
+    <string name="point_my_location_icon_cd">Konumuma Git</string>
 </resources>
