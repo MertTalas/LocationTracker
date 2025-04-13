@@ -74,7 +74,7 @@ class LocationService : Service() {
             .build()
 
         try {
-            if (hasNotLocationPermission()) {
+            if (!hasLocationPermission()) {
                 stopSelf()
                 return
             }
@@ -125,13 +125,13 @@ class LocationService : Service() {
         return abs(results[0])
     }
 
-    private fun hasNotLocationPermission() = ActivityCompat.checkSelfPermission(
+    private fun hasLocationPermission() = ActivityCompat.checkSelfPermission(
         this,
         Manifest.permission.ACCESS_FINE_LOCATION
-    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+    ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
         this,
         Manifest.permission.ACCESS_COARSE_LOCATION
-    ) != PackageManager.PERMISSION_GRANTED
+    ) == PackageManager.PERMISSION_GRANTED
 
 
     private fun createNotificationChannel() {
